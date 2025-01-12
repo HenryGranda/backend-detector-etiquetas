@@ -7,7 +7,7 @@ services:
     region: us-central
     plan: free
     runtime: python
-    pythonVersion: 3.9
+    pythonVersion: 3.11
     disk:
       size: 1GB
       mountPath: /var/lib/data
