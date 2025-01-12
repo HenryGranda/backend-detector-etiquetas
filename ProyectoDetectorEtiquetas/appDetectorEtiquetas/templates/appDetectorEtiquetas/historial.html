@@ -1,0 +1,40 @@
+<!-- Botón para regresar a cargar imagen -->
+<div style="margin-top: 20px; text-align: center;">
+    <a href="/" class="btn" style="padding: 10px 20px; background-color: #007bff; color: white; text-decoration: none; border-radius: 5px;">
+        Cargar Nueva Imagen
+    </a>
+</div>
+<h1>Historial de Imágenes Procesadas</h1>
+{% if imagenes %}
+    <table border="1" style="width: 100%; text-align: center; border-collapse: collapse;">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Fecha y Hora</th>
+                <th>Imagen</th>
+                <th>Etiquetas Detectadas</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for imagen in imagenes %}
+            <tr>
+                <td>{{ imagen.id }}</td>
+                <td>{{ imagen.fecha_procesamiento|date:"d/m/Y H:i:s" }}</td>
+                <td>
+                    <img src="{{ imagen.imagen.url }}" alt="Imagen Procesada" style="max-width: 200px; height: auto;">
+                </td>
+                <td>
+                    <ul style="list-style: none; padding: 0;">
+                        {% for etiqueta in imagen.etiquetas %}
+                        <li>{{ etiqueta.etiqueta }} (Confianza: {{ etiqueta.confianza|floatformat:2 }}%)</li>
+                        {% endfor %}
+                    </ul>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <p>No hay imágenes procesadas en el historial.</p>
+{% endif %}
+

@@ -1,0 +1,96 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Captura en Tiempo Real</title>
+    <link rel="stylesheet" href="{% static 'appDetectorEtiquetas/styles.css' %}">
+</head>
+<body>
+    <div class="container">
+        <h1>Captura en Tiempo Real</h1>
+        <video id="camera" autoplay></video>
+        <canvas id="snapshot" style="display: none;"></canvas>
+        
+        <div class="button-container">
+            <button id="start-btn">Iniciar Detección</button>
+            <button id="stop-btn" disabled>Detener Detección</button>
+            <button id="back-btn" onclick="window.location.href='/'">Regresar a Cargar Imagen</button>
+        </div>
+
+        <div id="results"></div>
+    </div>
+
+    <script>
+        const video = document.getElementById('camera');
+        const resultsDiv = document.getElementById('results');
+        const startBtn = document.getElementById('start-btn');
+        const stopBtn = document.getElementById('stop-btn');
+
+        let detectionInterval = null; // Variable para controlar el intervalo
+        let lastSpoken = ""; // Almacena las etiquetas anunciadas previamente
+
+        // Activar la cámara
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(stream => { video.srcObject = stream; })
+            .catch(err => console.error("Error al acceder a la cámara:", err));
+
+        function procesarFotograma() {
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            // Convertir a Base64
+            const dataUrl = canvas.toDataURL('image/jpeg');
+
+            // Enviar al backend
+            fetch('/captura_camara/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: `image=${encodeURIComponent(dataUrl)}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                resultsDiv.innerHTML = ''; // Limpiar resultados previos
+                const etiquetas = data.resultados.map(result => `${result.etiqueta} (${result.confianza.toFixed(2)}%)`).join(', ');
+
+                // Mostrar etiquetas en pantalla
+                resultsDiv.innerHTML = `<p>${etiquetas}</p>`;
+
+                // Anunciar etiquetas por voz si son diferentes y no se está hablando
+                if (etiquetas !== lastSpoken && !window.speechSynthesis.speaking) {
+                    lastSpoken = etiquetas; // Actualizar las últimas etiquetas anunciadas
+                    const speech = new SpeechSynthesisUtterance(etiquetas);
+                    window.speechSynthesis.speak(speech);
+                }
+            })
+            .catch(err => console.error("Error al procesar el fotograma:", err));
+        }
+
+        // Función para iniciar la detección
+        function iniciarDeteccion() {
+            detectionInterval = setInterval(procesarFotograma, 500); // Cada 500 ms
+            startBtn.disabled = true; // Desactivar botón de iniciar
+            stopBtn.disabled = false; // Activar botón de detener
+        }
+
+        // Función para detener la detección
+        function detenerDeteccion() {
+            clearInterval(detectionInterval); // Detener el intervalo
+            detectionInterval = null;
+            startBtn.disabled = false; // Activar botón de iniciar
+            stopBtn.disabled = true; // Desactivar botón de detener
+        }
+
+        // Asignar eventos a los botones
+        startBtn.addEventListener('click', iniciarDeteccion);
+        stopBtn.addEventListener('click', detenerDeteccion);
+    </script>    
+</body>
+</html>

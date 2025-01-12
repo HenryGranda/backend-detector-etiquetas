@@ -1,0 +1,75 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resultados</title>
+    <link rel="stylesheet" href="{% static 'appDetectorEtiquetas/styles.css' %}">
+</head>
+<body>
+    <div class="container">
+        <h1>Resultados de la Predicción</h1>
+        <div style="max-width: 500px; margin: 0 auto;">
+            {% if imagen_url %}
+                <img src="{{ imagen_url }}" alt="Imagen cargada" id="preview">
+            {% else %}
+                <p>No se encontró ninguna imagen.</p>
+            {% endif %}
+
+            {% if resultados %}
+                <ul>
+                    {% for resultado in resultados %}
+                        {% if resultado.etiqueta == "No hay etiquetas disponibles" %}
+                            <li><strong>{{ resultado.etiqueta }}</strong></li>
+                        {% else %}
+                            <li>
+                                <span><strong>Etiqueta:</strong> {{ resultado.etiqueta }}</span>
+                                <span><strong>Score:</strong> {{ resultado.confianza|floatformat:2 }}</span>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p>No se encontraron predicciones para esta imagen.</p>
+            {% endif %}
+            <div class="text-center mt-3">
+                <a href="/" class="btn-custom">Subir otra imagen</a>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2024 Detector de Etiquetas</p>
+    </footer>
+
+    <script>
+        // Parsear los resultados del backend
+        let resultados = [];
+        try {
+            resultados = JSON.parse('{{ resultados_json|escapejs }}');
+            console.log("Resultados parseados:", resultados);
+        } catch (error) {
+            console.error("Error al parsear los resultados:", error);
+        }
+
+        // Mostrar voz con las etiquetas detectadas
+        if (resultados.length > 0) {
+            const etiquetas = resultados
+                .map(result => `${result.etiqueta} (${(result.confianza * 100).toFixed(2)}%)`)
+                .join(', ');
+
+            // Verificar si SpeechSynthesis está disponible
+            if ('speechSynthesis' in window) {
+                const speech = new SpeechSynthesisUtterance(etiquetas);
+                speech.lang = 'es-ES'; // Configurar idioma español
+                window.speechSynthesis.speak(speech);
+            } else {
+                console.warn("SpeechSynthesis no está disponible en este navegador.");
+            }
+        } else {
+            console.log("No hay resultados para procesar.");
+        }
+    </script>    
+</body>
+</html>
