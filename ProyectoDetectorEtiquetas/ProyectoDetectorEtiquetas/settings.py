@@ -9,6 +9,8 @@ DEBUG = os.getenv("DEBUG", "True") == "True"
 
 ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "").split(",")  # Agrega aquí tu dominio de Render
 
+CORS_ALLOW_ALL_ORIGINS = True
+
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:4200",  # Tu frontend local
     "https://backend-detector-etiquetas.onrender.com", 
