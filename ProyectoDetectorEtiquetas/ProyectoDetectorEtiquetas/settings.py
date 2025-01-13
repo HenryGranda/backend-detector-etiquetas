@@ -7,7 +7,7 @@ SECRET_KEY = os.getenv("SECRET_KEY", "clave-secreta-por-defecto")
 
 DEBUG = os.getenv("DEBUG", "True") == "True"
 
-ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "").split(",")  # Agrega aquí tu dominio de Render
+ALLOWED_HOSTS = ["localhost", "127.0.0.1", "backend-detector-etiquetas.onrender.com"]
 
 CORS_ALLOW_ALL_ORIGINS = True
 
