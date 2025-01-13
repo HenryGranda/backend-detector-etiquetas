@@ -27,8 +27,10 @@ class CargarImagenAPI(APIView):
     parser_classes = (MultiPartParser, FormParser)
 
     def post(self, request):
+        print(f"DEBUG - Request data: {request.data}")
         imagen = request.FILES.get('imagen')
         if not imagen:
+            print("DEBUG - No se proporcionó una imagen.")
             return Response({'error': 'No se proporcionó una imagen'}, status=400)
 
         # Guardar la imagen y obtener su ruta absoluta
