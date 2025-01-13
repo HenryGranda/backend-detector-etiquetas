@@ -11,6 +11,7 @@ ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "").split(",")  # Agrega aquí tu dom
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:4200",  # Tu frontend local
+    "https://backend-detector-etiquetas.onrender.com", 
 ]
 
 INSTALLED_APPS = [
